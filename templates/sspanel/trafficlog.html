@@ -1,0 +1,89 @@
+{% extends 'base.html' %} {% block main %}
+<div class="column is-12">
+    <section class="hero is-success is-smaill">
+        <div class="hero-body">
+            <div class="container">
+                <h1 class="title">
+                    流量记录：
+                </h1>
+                <h2 class="subtitle">
+                    该记录每月1号自动清空....
+                </h2>
+            </div>
+        </div>
+    </section>
+</div>
+
+
+
+
+<div class="column is-12">
+
+    <nav class="level box ">
+        <div class="level-item has-text-centered">
+            <div>
+                <p class="heading">用户名:</p>
+                <p class="title">{{ ss_user }}</p>
+            </div>
+        </div>
+        <div class="level-item has-text-centered">
+            <div>
+                <p class="heading">流量剩余：</p>
+                <p class="title"><code>{{ ss_user.get_unused_traffic }}GB</code></p>
+            </div>
+        </div>
+    </nav>
+
+
+    <div class="box">
+        <p class="subtitle">选择节点(最新的10条记录)：</p>
+        <form method="get" action="{% url 'shadowsocks:trafficlog' %}">
+            <div class="field has-addons">
+                <div class="control">
+                    <div class="select">
+                        <select name="nodes">
+                            {% for node in nodes %}
+                                <option value={{ node.pk }}>{{ node }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="control">
+                    <button type="submit" class="button is-outlined is-info">提交</button>
+                </div>
+            </div>
+        </form>
+        <br>
+        <div class="content">
+            <table class="table is-striped">
+                <p>节点: <strong>{{ node_name }}</strong>共消耗流量：<code>{{ total }}</code></p>
+                <thead>
+                    <tr>
+                        <th>时间:</th>
+                        <th>节点ID:</th>
+                        <th>流量:</th>
+                    </tr>
+                </thead>
+
+                {% for log in log_dic%}
+                <tr>
+                    <td>{{ log.t }}</td>
+                    <td>{{ log.node_id }}</td>
+                    <td>{{ log.traffic }}</td>
+                </tr>
+                {% empty %}
+                <h2 class="subtitle">
+                    <p class="subtitle">还没有使用过流量呢</p>
+                </h2>
+                {% endfor %}
+            </table>
+        </div>
+
+    </div>
+
+</div>
+
+
+
+
+{% endblock main %}

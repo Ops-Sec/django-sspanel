@@ -1,8 +1,9 @@
-from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth.forms import AuthenticationForm as auth_login_form
 from django import forms
+from django.contrib.auth.forms import AuthenticationForm as auth_login_form
+from django.contrib.auth.forms import UserCreationForm
 from django.forms import ModelForm
-from .models import User, Node,Shop
+
+from .models import Announcement, Node, Shop, User
 
 
 class RegisterForm(UserCreationForm):
@@ -13,10 +14,10 @@ class RegisterForm(UserCreationForm):
                                    attrs={'class': 'input is-info'})
                                )
 
-    email = forms.CharField(label='邮箱',
-                            widget=forms.TextInput(
-                                attrs={'class': 'input is-warning'})
-                            )
+    email = forms.EmailField(label='邮箱',
+                             widget=forms.TextInput(
+                                 attrs={'class': 'input is-warning'})
+                             )
     invitecode = forms.CharField(label='邀请码', help_text='邀请码必须填写',
                                  widget=forms.TextInput(
                                      attrs={'class': 'input is-success'})
@@ -32,6 +33,14 @@ class RegisterForm(UserCreationForm):
                                 widget=forms.TextInput(
                                     attrs={'class': 'input is-danger', 'type': 'password'})
                                 )
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        t = User.objects.filter(email=email)
+        if len(t) != 0:
+            raise forms.ValidationError('该邮箱已经注册过了')
+        else:
+            return email
 
     class Meta(UserCreationForm.Meta):
         model = User
@@ -75,7 +84,26 @@ class NodeForm(ModelForm):
         model = Node
         fields = '__all__'
 
+
 class ShopForm(ModelForm):
     class Meta:
         model = Shop
         fields = '__all__'
+
+
+class AnnoForm(ModelForm):
+    class Meta:
+        model = Announcement
+        fields = '__all__'
+
+
+class UserForm(ModelForm):
+    class Meta:
+        model = User
+        fields = ['balance', 'level', 'level_expire_time',]
+        widgets = {
+            'balance': forms.NumberInput(attrs={'class': 'input'}),
+            'level': forms.NumberInput(attrs={'class': 'input'}),
+            'level_expire_time': forms.DateTimeInput(attrs={'class': 'input'}),
+        }
+

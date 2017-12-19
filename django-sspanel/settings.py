@@ -10,9 +10,10 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.11/ref/settings/
 """
 
-import os,platform
+import os
+import platform
 # 导入自定义设定文件
-if platform.node()=='EhcodeMBP.lan':
+if platform.node() == 'EhcodeMBP.lan':
     from .simple_setting_local import *
 else:
     from.simple_setting_product import *
@@ -41,6 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_crontab',  # 定时任务相关
     'shadowsocks',  # 前端网站
     'ssserver',
 ]
@@ -55,7 +57,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'django_sspanel.urls'
+ROOT_URLCONF = 'django-sspanel.urls'
 
 TEMPLATES = [
     {
@@ -73,7 +75,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'django_sspanel.wsgi.application'
+WSGI_APPLICATION = 'django-sspanel.wsgi.application'
 
 
 # Database
@@ -99,6 +101,12 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# 自定义用户验证
+AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.ModelBackend',
+    'shadowsocks.backends.EmailBackend',
+)
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.11/topics/i18n/
@@ -111,7 +119,11 @@ USE_I18N = True
 
 USE_L10N = True
 
-USE_TZ = True
+USE_TZ = False
+
+# session 设置
+SESSION_COOKIE_AGE = 60 * 60 # 60分钟
+SESSION_SAVE_EVERY_REQUEST = True
 
 
 # Static files (CSS, JavaScript, Images)
@@ -127,3 +139,13 @@ MEDIA_URL = '/media/'
 # 用户模型设置：
 AUTH_USER_MODEL = 'shadowsocks.User'
 
+# 定时任务相关
+CRONJOBS = [
+    ('59 23 * * *', 'ssserver.views.check_user_state',
+     '>>' + BASE_DIR + '/logs/userstate.log'),  # 每天23.59分检测用户等级是否到期，日志写入logs
+    ('0 0 1 * *', 'ssserver.views.auto_reset_traffic',
+     '>>' + BASE_DIR + '/logs/trafficrest.log'),  # 每月月初重置免费用户流量，日志写入logs
+    ('0 1 1 * *', 'ssserver.views.clean_traffic_log',
+     '>>' + BASE_DIR + '/logs/trafficrest.log'),  # 每月第一天凌晨1点删除所有流量记录，日志写入logs
+
+]

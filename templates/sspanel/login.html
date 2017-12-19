@@ -51,11 +51,12 @@
             <div class="field is-grouped">
                 <p class="control">
                     <button type="submit" class="button is-primary is-outlined">登录！</button>
-                    <input type="hidden" name="next" value="{{ next }}"/>
                 </p>
+                {% if USE_SMTP is True %}
                 <p class="control">
                     <a class="button is-info is-outlined " href="{% url 'password_reset' %}">忘记密码？</a>
                 </p>
+                {% endif %}
             </div>
         </form>
 
